@@ -327,7 +327,7 @@ class Installer
 		}
 
 		list($maj, $min, $bfx) = explode('.', $version);
-		$url = "http://sourceforge.net/projects/contao/files/$maj.$min/contao-$maj.$min.$bfx.zip/download";
+		$url = "http://download.contao.org/$maj.$min.$bfx/zip";
 
 		if ($this->php === false) {
 			if ($this->download == 'wget') {
@@ -340,7 +340,7 @@ class Installer
 			if (file_exists('download') && filesize('download') > 0) {
 				$this->exec($this->unzip . ' download');
 				$this->exec('rm download');
-				$folder = $this->exec('ls -d contao-*');
+				$folder = $this->exec('ls -d core-*');
 				$this->exec("mv $folder/* " . TL_ROOT . '/');
 				$this->exec("mv $folder/.[a-z]* " . TL_ROOT . '/'); // see #22
 				$this->exec("rm -rf $folder");
@@ -357,7 +357,7 @@ class Installer
 				unlink('download');
 			}
 
-			$glob = glob(TL_ROOT . '/contao-*');
+			$glob = glob(TL_ROOT . '/core-*');
 
 			// Remove the wrapper folder (see #23)
 			if (!empty($glob)) {
