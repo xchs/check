@@ -142,11 +142,11 @@ class Installer
 	 */
 	protected function canUseShell()
 	{
-		// Check for shell_exec() or exec()
-		if (function_exists('shell_exec')) {
-			$this->shell = 'shell_exec';
-		} elseif (function_exists('exec')) {
+		// Check for exec() or shell_exec()
+		if (function_exists('exec')) {
 			$this->shell = 'exec';
+		} elseif (function_exists('shell_exec')) {
+			$this->shell = 'shell_exec';
 		}
 
 		// Return if we cannot access the shell
@@ -155,9 +155,9 @@ class Installer
 		}
 
 		// Check for wget or curl
-		if ($this->exec('which wget') != '') {
+		if ($this->exec('command -v wget') != '') {
 			$this->download = 'wget';
-		} elseif ($this->exec('which curl') != '') {
+		} elseif ($this->exec('command -v curl') != '') {
 			$this->download = 'curl';
 		}
 
@@ -167,12 +167,18 @@ class Installer
 		}
 
 		// Check for unzip
-		if ($this->exec('which unzip') != '') {
+		if ($this->exec('command -v unzip') != '') {
 			$this->unzip = 'unzip';
 		}
 
 		// Return if we cannot unzip on the shell
 		if ($this->unzip == '') {
+			return false;
+		}
+
+		// Check for mv and rm in case the shell is limited (see #23)
+		if ($this->exec('command -v mv') == '' || $this->exec('command -v rm') == '') {
+			$this->shell = '';
 			return false;
 		}
 

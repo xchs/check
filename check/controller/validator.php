@@ -128,6 +128,28 @@ class Validator
 
 
 	/**
+	 * Check whether there are optional files
+	 *
+	 * @return boolean True if there are optional files
+	 */
+	public function hasOptional()
+	{
+		return !empty($this->errors['optional']);
+	}
+
+
+	/**
+	 * Return the optional files as array
+	 *
+	 * @return array The optional files array
+	 */
+	public function getOptional()
+	{
+		return $this->errors['optional'];
+	}
+
+
+	/**
 	 * Check whether the installation is vaild
 	 *
 	 * @return boolean True if the installation is valid
@@ -181,7 +203,11 @@ class Validator
 	 */
 	protected function validate()
 	{
-		$this->errors = array('missing'=>array(), 'corrupt'=>array());
+		$this->errors = array(
+			'missing' => array(),
+			'corrupt' => array(),
+			'optional' => array()
+		);
 
 		// Load the file hashes
 		$file = 'versions/' . VERSION . '.' . BUILD . '.json';
@@ -193,8 +219,12 @@ class Validator
 			}
 
 			if (!file_exists(TL_ROOT . '/' . $path)) {
-				$this->valid = false;
-				$this->errors['missing'][] = $path;
+				if ($this->isOptional($path)) {
+					$this->errors['optional'][] = $path;
+				} else {
+					$this->valid = false;
+					$this->errors['missing'][] = $path;
+				}
 			} else {
 				$buffer = str_replace("\r", '', file_get_contents(TL_ROOT . '/' . $path));
 
@@ -207,5 +237,26 @@ class Validator
 				$buffer = null;
 			}
 		}
+	}
+
+
+	/**
+	 * Check if a file is optional
+	 *
+	 * @param string $path The file path
+	 *
+	 * @return boolean True if the file is optional
+	 */
+	protected function isOptional($path)
+	{
+		if ($path == 'files/tinymce.css' || $path == 'templates/music_academy.sql') {
+			return true;
+		}
+
+		if (strncmp($path, 'files/tiny_templates/', 11) === 0 || strncmp($path, 'files/music_academy/', 20) === 0) {
+			return true;
+		}
+
+		return false;
 	}
 }
